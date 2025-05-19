@@ -20,3 +20,8 @@ API for subscribing to weather updates based on a provided `swagger.yaml`.
 docker-compose up --build
 ```
 Access API at http://localhost:3000.
+
+Screenshots of working application:
+
+<img width="734" alt="Screenshot 2025-05-19 at 23 45 51" src="https://github.com/user-attachments/assets/d0adb590-aa6d-4962-8bd0-64d850635e4b" />
+<img width="572" alt="Screenshot 2025-05-19 at 23 46 06" src="https://github.com/user-attachments/assets/1584f080-e9d8-41a6-83ae-075ff0b86efa" />
