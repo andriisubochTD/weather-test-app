@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Subscription</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+    }
+    form, .weather-check {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    input, select, button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    #message, #weatherResult {
+      margin-top: 10px;
+      color: #333;
+    }
+    .error {
+      color: red;
+    }
+    .success {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Weather Subscription</h1>
+
+  <!-- Форма для підписки -->
+  <form id="subscribeForm">
+    <h2>Subscribe to Weather Updates</h2>
+    <input type="email" name="email" placeholder="Enter your email" required>
+    <input type="text" name="city" placeholder="Enter city (e.g., Kyiv)" required>
+    <select name="frequency" required>
+      <option value="" disabled selected>Select frequency</option>
+      <option value="hourly">Hourly</option>
+      <option value="daily">Daily</option>
+    </select>
+    <button type="submit">Subscribe</button>
+    <p id="message"></p>
+  </form>
+
+  <!-- Перевірка погоди -->
+  <div class="weather-check">
+    <h2>Check Current Weather</h2>
+    <input type="text" id="weatherCity" placeholder="Enter city (e.g., Kyiv)">
+    <button onclick="checkWeather()">Get Weather</button>
+    <p id="weatherResult"></p>
+  </div>
+
+  <script>
+    // Обробка форми підписки
+    document.getElementById('subscribeForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const messageEl = document.getElementById('message');
+      messageEl.textContent = '';
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+
+      try {
+        const response = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const result = await response.json();
+        if (response.ok) {
+          messageEl.textContent = result.message;
+          messageEl.className = 'success';
+        } else if (response.status === 409) {
+          messageEl.textContent = 'This email is already subscribed. Check your inbox for a confirmation email or unsubscribe to try again.';
+          messageEl.className = 'error';
+        } else {
+          messageEl.textContent = result.error || 'Failed to subscribe';
+          messageEl.className = 'error';
+        }
+      } catch (error) {
+        messageEl.textContent = 'Error: Could not connect to server';
+        messageEl.className = 'error';
+      }
+    });
+
+    // Перевірка погоди
+    async function checkWeather() {
+      const city = document.getElementById('weatherCity').value;
+      const resultEl = document.getElementById('weatherResult');
+      resultEl.textContent = '';
+
+      if (!city) {
+        resultEl.textContent = 'Please enter a city';
+        resultEl.className = 'error';
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
+        const result = await response.json();
+        if (response.ok) {
+          resultEl.textContent = `Temperature: ${result.temperature}°C, Humidity: ${result.humidity}%, Description: ${result.description}`;
+          resultEl.className = 'success';
+        } else {
+          resultEl.textContent = result.error || 'Failed to fetch weather';
+          resultEl.className = 'error';
+        }
+      } catch (error) {
+        resultEl.textContent = 'Error: Could not connect to server';
+        resultEl.className = 'error';
+      }
+    }
+  </script>
+</body>
+</html>
